@@ -1,0 +1,59 @@
+# config.yaml — settings from Montgomery et al. 2026 (Commun Med 6:532) Methods, plus this project's conventions.
+# "source: paper" values must match the paper; "source: project" values are ours and are explained in PROTOCOL.md.
+
+paper:
+  citation: "Montgomery DP, Shide JJ, Didouchevski AM, Dickinson AH, Sidorov MS. Commun Med 6:532 (2026). doi:10.1038/s43856-026-01741-0"
+  license: "CC BY-NC-ND 4.0"
+  supplement_file: refs/supplementary-data-1.xlsx
+  supplement_sha256: aa6dfb4cdd2a47b98cf2401f15a4ac609104eb8b45df6508c3b54519c37b8736
+
+spectra:                      # source: paper
+  freq_min_hz: 1.0
+  freq_max_hz: 49.5
+  freq_step_hz: 0.5
+  n_bins: 98
+  units: "uV^2/Hz, linear; median Welch PSD (2-s Hamming, 50% overlap); F3/F4, C3/C4, O1/O2 averaged per region, then across regions"
+  n_recordings: 344
+  n_td: 185
+  n_as: 159
+
+bands_hz:                     # source: paper
+  delta: [2, 4]
+  theta: [4, 6]
+  alpha: [6, 12]
+  beta: [13, 30]
+  gamma: [30, 50]
+
+specparam:                    # source: paper
+  version_paper: "2.0.0rc2"
+  version_used: "2.0.0rc2"
+  fit_range_hz: [1, 49.5]
+  peak_width_limits_hz: [0.5, 12]
+  peak_threshold: 2.0
+  max_n_peaks: .inf
+  min_peak_height: 0.0
+  aperiodic_mode_paper: knee
+  aperiodic_modes_compared: [knee, fixed]   # source: project
+
+conventions:                  # settled from the data 2026-11-01 (src/validate.py; tables/delta_rules.csv; per-recording in data/, local only)
+  band_integration: "(hi - lo) * mean(x at bins lo <= f <= hi)"   # reverse-engineered from the paper's reported values
+  band_integration_check:     # relative error vs paper (ours / reported - 1)
+    delta: "344/344 within 4.7e-7 (rounding); median 2.2e-16"
+    total_1_50: "343/344 within rtol 1e-5; AS159 -0.28% (reported 417.37, ours 416.19) -> deviations table"
+    trapezoid_rejected: "median -0.98%, median |e| 2.1%, max |e| 18.5%"
+    other_bands: "theta/alpha/beta/gamma do NOT follow this rule on closed intervals (median +5 to +9%); not used"
+  delta_bins: [2.0, 2.5, 3.0, 3.5, 4.0]   # both endpoints included; delta = 2 * mean = 0.4 * sum of these 5 bins
+  paper_periodic_delta: "band rule over Fig 1c (fitted peak model, log10 units); 344/344 within 1.04e-5"
+  periodic_residual: "log10(psd) - log10(aperiodic_fit), integrated over delta bins with the same rule; unitless"
+  periodic_residual_vs_paper: "same rule on log10(Fig 1a) - log10(Fig 1e) differs from paper's periodic delta: median |d| 0.091, max 2.23, r = 0.939"
+  periodic_quantity_primary: "band rule over specparam's fitted peak model (the paper's quantity)"
+  periodic_quantity_secondary: "band rule over log10(psd) - log10(aperiodic_fit)"
+  fig2_to_fig1_mapping: "nearest match on (exponent, offset), tolerance 1e-5; never positional"
+
+analysis:                     # source: project (PROTOCOL.md)
+  primary_outcome: "paired within-recording difference in the integrated 2-4 Hz periodic quantity (periodic_quantity_primary), fixed minus knee"
+  sensitivity_bootstrap_unit: participant   # cluster bootstrap over Fig 2 ID (repeated AS visits)
+  bootstrap_n: 10000
+  bootstrap_unit: recording
+  ci_level: 0.95
+  random_seed: 20261029
