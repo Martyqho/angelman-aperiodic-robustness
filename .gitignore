@@ -2,3 +2,6 @@
 __pycache__/
 refs/*.pdf
 refs/*.xlsx
+data/
+.DS_Store
+*.pyc

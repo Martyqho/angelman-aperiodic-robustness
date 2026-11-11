@@ -22,19 +22,13 @@ import numpy as np
 import pandas as pd
 
 import load_supplement as ls
+from fit_spectra import DELTA, band_power
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_XLSX = ROOT / "refs" / "supplementary-data-1.xlsx"
 DATA = ROOT / "data"  # per-recording derived values: local only (CC BY-NC-ND), gitignored
 TABLES = ROOT / "tables"  # aggregate summaries: published
 DF = 0.5  # Hz, bin width
-DELTA = (2.0, 4.0)
-
-
-def band_power(freqs, x, lo, hi):
-    """(hi - lo) * mean of x over bins lo <= f <= hi: the paper's band rule."""
-    m = (freqs >= lo) & (freqs <= hi)
-    return (hi - lo) * x[:, m].mean(axis=1)
 
 
 def delta_rules(freqs, psd):
