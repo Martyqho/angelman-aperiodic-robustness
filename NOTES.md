@@ -73,4 +73,332 @@ The two candidates differ by the model misfit: |log10(1a) − log10(1e) − 1c| 
 
 **Essay.** Best "one honest difficulty" candidate so far: the text and the data differed, and it was resolved by checking. The difference is invisible in the summary statistics (r = 0.94) and only showed up because the supplement included the fitted peak model as its own sheet.
 
-**Email to the authors (decide at the freeze).** One question about how the reported features were computed from the region-averaged PSDs, in two parts: the periodic definition, and the AS exponent gap.
+**Email to the authors (decide at the freeze).** One question about how the reported features were computed from the region-averaged PSDs, in two parts: the periodic definition, and the AS exponent gap. *(2026-11-04: the AS exponent gap was checked across all 159 AS recordings and not found as a bias; see the validation entry. The AS periodic-delta discrepancy found there is the stronger candidate for the second part.)*
+
+## 2026-11-03 — Synthetic validation: the peak-model quantity separates peaks from aperiodic shifts (in knee mode)
+
+`src/fit_spectra.py` (`fit_one`, the only fit call), `src/simulate.py`, `src/plot_simulation.py`, `tests/test_simulate.py`; `figures/fig_synthetic_validation.png`, `tables/sim_summary.csv`. Per-spectrum results in `data/sim_spectra.csv` (local; regenerate with `python src/simulate.py`, ~12 min).
+
+**fit_one components.** specparam 2.0.0rc2 exposes `fm.get_model('aperiodic'|'peak'|'full', 'log')` (backed by `_ap_fit`, `_peak_fit`, `modeled_spectrum_`). Checked on every fit: log10(psd) − ap_fit == `_spectrum_flat`, and ap_fit + peak_fit == full model.
+
+**Baseline (dry run of the Phase 3 loop).** Knee-mode fit_one over the 185 TD spectra: 185/185 succeed; 9 have knee ≤ 0 (no knee frequency); 8 knee frequencies fall outside 0.5–20 Hz. Medians: b₀ = 2.3597, k₀ = 16.519, χ₀ = 2.2088, knee frequency 3.62 Hz (n = 176; k₀^(1/χ₀) = 3.56 Hz). Paper's TD mean is 4.15 Hz.
+
+**Shifts from the reported values.** Δb = +0.842 and Δχ = +0.393 (AS − NT medians of the Fig 2 offset and exponent). Reported periodic delta medians AS 0.663, TD 0.064 → injected band-rule value 0.599 → A = 0.603 for a Gaussian at 3 Hz, σ = 0.5 (band rule of a unit-height peak = 0.9935). A/2 and 2A also run.
+
+**Generator.** log10 P = b − log10(k + f^χ) + A·exp(−(f − 3)²/(2·0.5²)) + ε, ε ~ Normal(0, nlv) in log10, nlv ∈ {0.02, 0.05}; white noise, not the chi-square noise of a real Welch estimate. Identical (max |diff| 0.0) to `specparam.sim.sim_power_spectrum` with the same parameters and seed, with and without noise: log10 and σ-as-standard-deviation conventions agree. Noise-free: knee fit returns b₀, k₀, χ₀ exactly with 0 peaks. Seeds paired across conditions: seed = 20261029 + 1000·(noise index) + replicate.
+
+**Grid.** 200 seeds × 10 cells ((a), (b), (c), (c′), (d) × 3 heights, (e) × 3 heights) × 2 noise levels × 2 modes = 8,000 fits. Success: knee 99.95%, fixed 100%. The 2 knee failures are one spectrum, replicate 163 at nlv 0.02 (seed 20261192), in (a) and (b); with paired seeds those two differ only by a constant offset.
+
+Medians at nlv = 0.02 (nlv = 0.05 in `tables/sim_summary.csv`; same picture, wider spread):
+
+| condition | raw delta | periodic delta, knee | periodic delta, fixed | fixed − knee (paired) |
+|---|---|---|---|---|
+| (a) baseline | 16.7 | 0.021 | 0.332 | +0.321 |
+| (b) offset only | 116.0 | 0.021 | 0.332 | +0.321 |
+| (c) exponent only | 14.0 | 0.022 | 0.458 | +0.444 |
+| (c′) exponent only, knee freq held | 10.4 | 0.021 | 0.423 | +0.414 |
+| (d) peak, true 0.599 | 36.8 | 0.559 | 1.129 | +0.571 |
+| (e) all three, true 0.599 | 212.9 | 0.560 | 1.233 | +0.670 |
+
+**What held.**
+- Raw delta rises 7× under offset only, as predicted.
+- Knee mode: the peak-model periodic delta stays inside its no-peak 95% spread under offset only (94.5%) and exponent only (96%). The quantity does what the paper says it does, when the model matches the generator.
+- Knee mode recovers the injected peak with a small downward bias: 0.285 of 0.300, 0.559 of 0.599, 1.114 of 1.198 (−5 to −7%), the same in (d) and (e).
+
+**What did not.**
+- *(c) exponent only lowers raw delta (16.7 → 14.0, −16%); the brief predicted a rise.* In b − log10(k + f^χ), f^χ = 1 at 1 Hz for every χ, so with b fixed an exponent increase pivots at 1 Hz and lowers power at every bin above it. "Steeper exponent → more delta" assumes a pivot above the delta band. In the AS-like case the offset dominates (b and c together give +483%). With k fixed, (c) also moves the knee frequency from 3.56 to 2.94 Hz.
+- *Fixed mode fails the separation.* Fit to knee-shaped spectra, fixed mode puts ~0.33 of spurious periodic delta into the baseline (the misfit below the knee becomes a delta "peak"; exponent 1.62 vs true 2.21), and an exponent-only change moves it out of its own baseline spread (40% inside at nlv 0.02). It over-recovers the injected peak by 0.2–0.5.
+
+**Primary-estimand preview with known truth.** Fixed minus knee periodic delta is +0.32 with no peak at all, +0.44 when only the exponent changes, +0.57 to +0.67 with the AS-sized peak. Under this generator, the knee-vs-fixed difference is not small, and it is largest exactly where an exponent difference and a delta peak coincide, as in AS.
+
+## 2026-11-03 — (c′) added; reading declared before the rerun
+
+(c′): exponent steepened by Δχ with k = k₀^(χ₁/χ₀), so the knee frequency stays at k₀^(1/χ₀) = 3.56 Hz (in (c) it falls to 2.94 Hz). b stays b₀, so the low-frequency plateau b − log10 k drops by log10(k₁/k₀) = (Δχ/χ₀)·log10 k₀ ≈ 0.21; that is what holding the knee frequency costs in this parameterization.
+
+Reading, written before the run: if the paired fixed − knee periodic delta in (c′) sits near (a)'s +0.32, the knee moving toward the band drives the fixed-mode inflation in (c); if it tracks (c)'s +0.44, the steeper slope does; in between, both contribute.
+
+**Result.** Paired fixed − knee periodic delta, median (IQR):
+
+| | nlv 0.02 | nlv 0.05 |
+|---|---|---|
+| (a) baseline | +0.321 (0.292–0.348) | +0.308 (0.264–0.353) |
+| (c) exponent, knee 3.56 → 2.94 Hz | +0.444 (0.414–0.496) | +0.411 (0.378–0.480) |
+| (c′) exponent, knee held at 3.56 Hz | +0.414 (0.381–0.456) | +0.407 (0.360–0.469) |
+
+(c′) tracks (c), not (a): about three quarters of the (c) increase at nlv 0.02 (0.093 of 0.123) and all of it at nlv 0.05. Under the reading declared above, the steeper slope drives the fixed-mode inflation and the knee moving toward the band adds little (~0.03). The IQRs overlap, so "little" is the honest size. PROTOCOL's expectations name both lower knee frequencies and steeper exponents; the simulation puts most of the weight on the exponent.
+
+## 2026-11-03 — Synthetic validation, part 2: parameter recovery, peak detection, noise 0.05
+
+Same run (`tables/sim_summary.csv`, columns `*_err_*`, `frac_any_peak_below_6hz`, `frac_peak_hit_3hz`). Full rerun from scratch with the final code, 12 min 4 s: the 54 rows shared with the earlier table (all of (a)–(e)) are identical in every column, so the earlier hand-filled `true_k` and the summary rebuild changed nothing.
+
+**Knee-mode parameter recovery** (estimated − true, median; nlv 0.02 / 0.05). No-peak cells (a)–(c′): offset −0.014 / −0.035; exponent −0.001 to −0.002 / −0.004 to −0.005; knee frequency −0.02 to −0.03 Hz / −0.05 to −0.06 Hz (IQR about ±0.08 Hz / −0.25 to +0.09 Hz). Peak cells (d)/(e): offset and exponent within ±0.03, knee frequency −0.12 to +0.03 Hz. Knee mode recovers the generator's aperiodic parameters with no bias worth naming. Fixed mode, for reference: exponent −0.59 at baseline (fits 1.62 to a true 2.21), −0.68 in (c′), −0.41 to −0.63 with peaks.
+
+**Peak detection, no-peak cells (a)–(c′): false positives.**
+
+| | any peak < 6 Hz, knee | any peak < 6 Hz, fixed | peak at 3 ± 0.5 Hz, knee | peak at 3 ± 0.5 Hz, fixed |
+|---|---|---|---|---|
+| nlv 0.02 | 75–77% | 39–81% | 29–30% | 0.5–2.5% |
+| nlv 0.05 | 67–68% | 75–86% | 24–25% | 5–12% |
+
+Knee mode fits a small noise peak below 6 Hz in about three quarters of no-peak spectra, and one at 3 ± 0.5 Hz in about a quarter. They are small: the knee-mode periodic delta in those cells has median 0.021 (nlv 0.02) and 0.042–0.050 (nlv 0.05). This is what `peak_threshold` 2.0 with `min_peak_height` 0 and no peak cap does on white noise. The rate should be quoted next to any real-data peak count (secondary (d)).
+
+Fixed mode rarely puts a peak at 3 Hz, yet its baseline periodic delta is 0.33. Spot check, 40 seeds per noise level at baseline (not in the table): the peak contributing most to 2–4 Hz is centered at a median of 5.1–5.2 Hz (5–95%: 3.7–10 Hz), bandwidth ~3.6 Hz, height ~0.37. Fixed mode fills the knee bend with one broad Gaussian near 5 Hz, and its lower tail is the spurious "delta". The 1–6 Hz false-positive rate understates this, because the peak's center is often above 6 Hz.
+
+**Peak detection, (d)/(e): recovery.** A fitted peak at 3 ± 0.5 Hz in 100% of knee fits at both noise levels and all three heights; fixed 96–100% (lowest 96%, A/2 at nlv 0.05).
+
+**Does it hold at nlv 0.05?** Yes, for every claim above.
+- Knee mode stays inside its own no-peak 95% spread: (b) 95.0%, (c) 95.0%, (c′) 94.0% (nlv 0.02: 94.5, 96.0, 94.5).
+- Knee recovery, raw median vs truth: 0.311 of 0.300, 0.575 of 0.599, 1.125 of 1.198 (+4% to −6%; at 0.02, −5% to −7%). The no-peak baseline is higher at 0.05 (0.050 vs 0.021); recovered minus baseline is −13% to −10% of truth at 0.05 and −12% to −9% at 0.02. Same downward bias at both noise levels.
+- Fixed mode, inside its own baseline spread: (c) 72.5%, (c′) 77.5% (nlv 0.02: 40%, 56%).
+- Fixed − knee: +0.31 baseline, +0.41 (c), +0.41 (c′), +0.46 (d), +0.58 (e); all lower than at 0.02 by 0–0.11.
+
+One non-monotone result at both noise levels: at 2A the paired gap falls back (d: +0.33 / +0.26; e: +0.48 / +0.38). With a large peak at 3 Hz, the fixed fit uses it in place of the broad 5 Hz shoulder. So the fixed-mode excess is not additive in peak size; it is largest for peaks of the size actually reported for AS (A and A/2).
+
+## 2026-11-04 — Fit pass over the 344 spectra
+
+`python src/fit_spectra.py` (11 s): knee and fixed fits with `fit_one` for every Fig 1a spectrum → `data/features.csv`, `data/peaks.csv`, `data/fits.npz` (all local). Output, in full:
+
+```
+converged, knee: TD 185/185, AS 159/159
+converged, fixed: TD 185/185, AS 159/159
+knee_flag: TD 17/185, AS 8/159
+```
+
+`knee_flag` = knee ≤ 0 (no knee frequency) or knee frequency outside 0.5–20 Hz. specparam 2.0.0rc2 fits the knee unbounded (`ap_bounds` ±inf), so "knee at bound" (gate item 4) cannot occur; the flag covers the implausible-knee half. Canary: TD knee medians b₀ = 2.359707, k₀ = 16.518708, χ₀ = 2.208844, and 9 knee ≤ 0 + 8 out of range, identical to the synthetic baseline entry, so `fit_one` is unchanged by the new `return_components` option.
+
+## 2026-11-04 — QC overlay selection and age bins, declared before running `src/qc.py`
+
+Ten overlays per group, chosen by rule, not by browsing:
+
+1. **Highest raw delta**: the recording with the largest `raw_delta` (our band rule on Fig 1a, identical to the reported delta to 4.7e-7).
+2. **Knee-flagged**: among the group's `knee_flag` recordings, the one with the lowest knee-mode R². If the group had none, the recording whose knee frequency is farthest from the group median on a log scale.
+3. **Named**: AS154 (sharp 2.5 Hz peak) for AS; TD133 (footnoted offset) for TD.
+4. **Collisions**: if a rule picks a recording already chosen, it takes the next one in the same ordering. Order of filling: named, then highest raw delta, then knee-flagged.
+5. **Seven random**: `np.random.RandomState(20261029)`, one generator per group (TD first, then AS, each freshly seeded), `choice(remaining, 7, replace=False)` over the group's remaining labels in Fig 1 order.
+
+Age bins for the convergence and knee-flag counts, left-closed: [0, 3), [3, 6), [6, 9), [9, 12), [12, 16) years (n TD/AS: 48/37, 54/48, 48/39, 23/23, 12/12).
+
+QC does not compute or plot any summary of fixed-mode periodic delta or the fixed − knee difference across recordings; the overlays show both fits per recording, as gate item 5 requires.
+
+## 2026-11-04 — QC outputs (gate items 2–5)
+
+`python src/qc.py` → `tables/qc_fit_quality.csv`, `tables/qc_counts.csv`; local: `data/qc/knee_flagged.csv`, `data/qc/hist_r2_error.png`, `data/qc/overlay_selection.csv`, `data/qc/overlay_<label>.png` (20), `data/qc/overlays_TD.png`, `data/qc/overlays_AS.png`.
+
+**Convergence** 344/344 in both modes, every age bin.
+
+**Knee flags** (all are knee ≤ 0 or knee frequency < 0.5 Hz; none above 20 Hz):
+
+| age bin | TD flagged / n | AS flagged / n |
+|---|---|---|
+| [0, 3) | 13 / 48 | 3 / 37 |
+| [3, 6) | 3 / 54 | 4 / 48 |
+| [6, 9) | 0 / 48 | 1 / 39 |
+| [9, 12) | 1 / 23 | 0 / 23 |
+| [12, 16) | 0 / 12 | 0 / 12 |
+| all | 17 / 185 (9 knee ≤ 0) | 8 / 159 (6 knee ≤ 0) |
+
+The TD flags are concentrated under age 3 (13 of 17; 11 of them under 1.1 years). These are spectra with no bend for the knee to fit, so the knee fit collapses toward a straight line.
+
+**R² and error** (median [5th percentile, min]):
+- Knee: TD 0.9970 [0.990, 0.951], AS 0.9970 [0.983, 0.921].
+- Fixed: TD 0.9928 [0.983, 0.953], AS 0.9942 [0.981, 0.920].
+- Error medians: knee TD 0.029, AS 0.040; fixed TD 0.041, AS 0.046.
+- The two lowest R² in each mode are TD150 and AS151, both knee-flagged.
+
+**Overlays, one sentence each** (selection per the rule declared above; `data/qc/overlay_selection.csv`).
+
+TD:
+- TD133 (named): knee ≤ 0, so both aperiodic fits are the same straight line; both peak models follow a large 2–8 Hz bump and a 20–50 Hz residual. Sane given a spectrum with no bend.
+- TD23 (highest raw delta): the knee fit follows the low-frequency plateau and is sane. The fixed line overshoots at 1 Hz and undershoots 2–8 Hz, so its peak model adds a broad 2–8 Hz shoulder under the alpha peak.
+- TD150 (knee-flagged, lowest knee R² 0.951): not sane in the delta band. Both fits draw a straight line through a 1.5–6 Hz bump (raw residual up to +0.28), and neither peak model fits it; their only peak is at 30 Hz. See the edge-rule note below.
+- TD93: knee frequency 0.85 Hz, so the two fits are nearly identical; peak models agree. Sane.
+- TD36: knee sane (plateau below 4 Hz). Fixed overshoots at 1 Hz and its peak model carries a broad 3–8 Hz shoulder and inflated alpha and beta.
+- TD167: knee sane; fixed similar, with a shoulder from 4 Hz.
+- TD182: knee sane; fixed adds a broad 3–7 Hz shoulder and a taller alpha peak.
+- TD112: both reasonable; fixed has a slightly larger 2–6 Hz bump; the knee peak model fits small ripples at 30–50 Hz.
+- TD156: both sane and close.
+- TD59: knee sane; fixed adds a 2–6 Hz shoulder.
+
+AS:
+- AS154 (named): the knee peak model captures the 2.5 Hz peak but under-fits its height (about 1.25 vs residual about 1.55), as noted on 2026-11-01. The fixed peak model is taller and adds a 4–20 Hz plateau of peaks. Knee sane apart from the known under-fit.
+- AS105 (highest raw delta): sane in shape, but the knee aperiodic plateau (knee frequency 3.59 Hz) runs through the 2–4 Hz excess, so part of the delta bump is assigned to the aperiodic component. Fixed assigns all of it to peaks.
+- AS151 (knee-flagged, lowest knee R² 0.921): not sane in the delta band. Both fits are straight lines, and neither peak model fits any peak, despite a 1.5–4 Hz bump of +0.85 in the residual. Periodic delta is 0 in both modes.
+- AS58: both sane; fixed larger at 2–5 Hz.
+- AS116: both sane; fixed larger at 2–5 Hz.
+- AS146: knee sane; fixed about twice as high in the delta band.
+- AS20: knee sane with a small delta peak model; fixed puts a broad 3–8 Hz peak there.
+- AS45: knee sane, with its plateau ending near 2 Hz; fixed about twice as high from 2 to 8 Hz.
+- AS41: both sane.
+- AS22: knee sane; fixed adds a broad shoulder from 2 Hz.
+
+**Edge rule (diagnostic, not a change).** specparam drops a candidate peak whose center lies within 1 × its bandwidth of the edge of the fit range (`_bw_std_edge = 1.0`, the default the paper also ran). Refitting TD150 and AS151 in knee mode with `_bw_std_edge = 0` keeps a peak at 4.16 Hz (TD150) and 2.86 Hz (AS151), and the peak-model delta goes from 0.000 to 1.02 and 1.76. So a broad low-frequency bump next to the 1 Hz edge can be reported as zero periodic delta under the paper's settings. The analysis keeps the default. How often this happens across the 344 is a candidate for secondary (d); not counted here.
+
+**Gate items, from these outputs** (verdict in the gate entry below):
+- Item 2 as written ("both fits succeed for ≥ 95%, no systematic failure by age or group"): convergence passes (100%). Under PROTOCOL's Inclusion definition of a failed fit (no convergence or knee frequency outside 0.5–20 Hz), success is 319/344 = 92.7%: TD 168/185 = 90.8%, AS 151/159 = 95.0%. TD failures are concentrated under age 3.
+- Item 3: reported above; no threshold applied.
+- Item 4: counted (table above) and listed (`data/qc/knee_flagged.csv`).
+- Item 5: 20 overlays saved and inspected.
+
+## 2026-11-04 — Validation table (secondary a): inclusion declared before running `src/validation.py`
+
+Knee refit vs reported (Fig 1b,d,f,g), per group: exponent, offset, periodic delta (refit `periodic_delta_peak_knee` vs reported periodic delta). Difference = refit − reported. All 344 recordings included (all converged); knee-flagged recordings stay in. A one-line sensitivity excludes the 25 knee-flagged. Measures: n, Pearson r, mean bias, SD of the difference, 95% limits of agreement (bias ± 1.96 SD), and the median difference.
+
+Prediction on record (from the Oct 25 check): TD exponent within ~0.05–0.10, and AS about 0.15 off, "high". The one recorded data point is TD1: refit 1.935 vs reported 1.981, so refit − reported = −0.046. "AS high" is read here as the AS gap being about 0.15 in magnitude. The sign will be reported as found.
+
+## 2026-11-04 — Validation table (secondary a): result
+
+`python src/validation.py` → `tables/validation.csv`, `tables/deviations.csv`. Knee refit − reported, analysis set (all 344; sensitivity without the 25 knee-flagged in brackets):
+
+| | n | r | mean bias | 95% LoA | median \|d\| | \|d\| > 0.15 |
+|---|---|---|---|---|---|---|
+| TD exponent | 185 | 0.986 | −0.012 [−0.004] | −0.22 to +0.19 | 0.063 | 13% |
+| AS exponent | 159 | 0.929 | −0.002 [+0.006] | −0.35 to +0.35 | 0.079 | 20% |
+| TD offset | 185 | 0.985 | +0.040 [+0.048] | −0.24 to +0.32 | 0.076 | 28% |
+| AS offset | 159 | 0.932 | +0.055 [+0.062] | −0.46 to +0.57 | 0.115 | 38% |
+| TD periodic delta | 185 | 0.819 | −0.017 [−0.009] | −0.25 to +0.22 | 0.051 | 9% |
+| AS periodic delta | 159 | 0.914 | −0.125 [−0.116] | −0.51 to +0.26 | 0.114 | 36% |
+
+**Against the prediction.**
+- TD exponent "within ~0.05–0.10": held as a typical size (median |d| 0.063; mean bias −0.012). The per-recording spread is wider than the prediction implies (LoA about ±0.2), and that spread is the finding. TD1 (−0.046) sits inside the TD interquartile range (−0.073 to +0.056).
+- AS exponent "about +0.15 high": not held as a direction. Mean −0.002, median +0.015, refit above reported in 55% and below in 45%. Read as a size, partly: median |d| 0.079, and 20% of AS recordings differ by more than 0.15. Which reading was meant is Wendy's call; both are reported.
+- So the exponent pattern that would have become the email's second question did not appear across all 159.
+
+**Not predicted: AS periodic delta.** The knee refit's periodic delta is lower than reported in AS: mean −0.125, median −0.104, 36% of recordings off by more than 0.15, and the same without the knee-flagged (−0.116). In TD it is essentially zero (−0.017). This was not predicted. It is the stronger candidate for the email's second question, in place of the exponent gap. (TD r = 0.82 reflects TD's small range of periodic delta, mean 0.13; compare the bias and LoA, not r.)
+
+**Not investigated here.** Same specparam version and settings, and the paper's own per-recording aperiodic fit (Fig 1e) and peak model (Fig 1c) are in the supplement. Comparing our knee aperiodic fit with Fig 1e recording by recording would show whether the fitting or the inputs differ. That is outside this phase; it is the open question the email would ask.
+
+**Offsets.** Refit about +0.04 (TD) and +0.055 (AS) above reported, same sign in both groups. Recorded in `tables/deviations.csv`.
+
+**What has now been seen.** The PROTOCOL disclosure (2026-11-03) stays as written; since then, knee-mode aggregates per group for exponent, offset and periodic delta have been computed under secondary (a), and the 20 QC overlays show both modes per recording. Still unseen: any aggregate of fixed-mode periodic delta, and any fixed − knee difference across recordings or groups.
+
+**2026-11-05 — Prediction resolved.** The Oct 25 prediction (“AS about +0.15 high”) rested on three recordings and is retracted as a direction; as a size it partly holds (median |d| 0.079, 20% beyond 0.15). The finding that replaces it: no mean bias in either group but per-recording limits of agreement of about ±0.2 (TD) and ±0.35 (AS), i.e. knee-mode parameters are not identified to better than that on a single spectrum. The AS periodic-delta gap (−0.125) is the open question and is the subject of the Fig 1e diagnostic, with readings declared before the run:
+
+*Fig 1e diagnostic (PROTOCOL secondary (a), continued), readings declared before the run.* This replaces a draft written earlier the same day (cuts 1e-5 / 1e-4), which was never run.
+
+Fig 1e is the paper's aperiodic component per recording, in linear units. If it came from one specparam knee fit on the region-averaged spectrum, log10(Fig 1e) is exactly b − log10(k + f^χ), apart from spreadsheet rounding (7 significant figures, about 2e-7 in log10). Per recording: `scipy.optimize.least_squares` fit of that curve to log10(Fig 1e) over the 98 bins, starting from the reported offset and exponent with k = 3^χ (a 3 Hz knee); then the largest absolute residual, and fitted (b, χ) vs the reported offset (Fig 1g) and exponent (Fig 1f).
+
+| outcome | max residual | fitted (b, χ) vs reported | meaning |
+|---|---|---|---|
+| (A) | < 1e-4 | equal within 1e-3 | Fig 1e is a single fit, and the reported parameters are that fit. The refit's ±0.2 scatter then comes from the inputs or the optimizer, not from aggregation. Next: check whether the refit's aperiodic curve differs from Fig 1e mainly in 2–4 Hz, and compare the refit's peak model with Fig 1c across the full spectrum. |
+| (B) | > 1e-3, structured | n/a | Fig 1e is not one knee curve: an average of regional fits (or smoothed). An average of three knee curves is not a knee curve. This explains scatter without bias in exponent and the −0.125 AS periodic-delta gap (averaging spectra blurs peaks; a fit on the average finds less peak power than the average of per-region peak fits). The email's second question becomes a request to confirm. |
+| (C) | < 1e-4 | differ | Fig 1e and Fig 1f/1g come from different computations; ask which the reported features are. |
+
+Operational details fixed now:
+- "Structured" means the residual is smooth across frequency, not rounding noise: lag-1 autocorrelation of the residual over the 98 bins ≥ 0.5.
+- A recording with max residual between 1e-4 and 1e-3, or above 1e-3 but not structured, is "unclassified" and is listed, not assigned.
+- Counts per group (TD, AS) in each outcome are reported. A mixture is reported as a mixture, not forced into one outcome.
+
+**Two side checks, declared with the readings.**
+1. *Edge-rule cases.* Do TD150 and AS151 have nonzero reported periodic delta? If yes, the paper's fit saw the low-frequency bump that the edge rule drops in our refit. If they are 0, the paper's fit dropped it too.
+2. *Does the AS gap scale with reported periodic delta?* Blurring predicts it does: refit − reported periodic delta becomes more negative as reported periodic delta grows. Measures, per group: OLS slope of (refit − reported) on reported, with its 95% CI, and Spearman ρ. Because the difference contains −reported, regressing it on reported is biased toward a negative slope by measurement noise alone (regression to the mean). So the same slope is also reported against the pair mean, (refit + reported)/2, as in a Bland–Altman plot. Blurring is supported only if the slope is negative on both axes in AS. A negative slope on the reported axis alone does not count. TD is reported alongside for reference.
+
+## 2026-11-04 — QC gate verdict, item by item
+
+`requirements.txt` (exact pins from the project venv's freeze, minus fooof, which only the smoke tests use) and `scripts/run_all.sh` (supplement sha256 check → `validate.py` → `fit_spectra.py` → `qc.py` → `validation.py` → pytest; `--with-sim` adds the 12-minute synthetic grid).
+
+1. **Loader assertions pass: PASS.** pytest 19/19 green (13 loader, 2 config, 4 simulate). `load_all`'s assertions also run inside every fit pass.
+2. **Both fits succeed for ≥ 95%, no systematic failure by age or group: FAILS as written.**
+   - Convergence is 344/344 in both modes, in every age bin.
+   - PROTOCOL's Inclusion section defines a failed fit as no convergence *or* knee frequency outside 0.5–20 Hz. By that definition, knee mode succeeds for 319/344 = 92.7% (TD 168/185 = 90.8%, AS 151/159 = 95.0%).
+   - The failures are systematic by age in TD: 13 of the 17 TD flags are under age 3 (13/48 = 27% of that bin, vs 3/37 in AS).
+   - Consequence if the criterion stands: 25 recordings leave the paired comparison, 13 of them TD under 3.
+   - Not resolved here; it is Wendy's decision whether item 2 means convergence or the Inclusion rule.
+3. **R² distributions reported, no borrowed threshold: PASS.** `tables/qc_fit_quality.csv`; histograms in `data/qc/hist_r2_error.png`.
+4. **Knee-at-bound or implausible knee frequency counted and listed: PASS.** Knee-at-bound cannot occur (knee unbounded in specparam 2.0.0rc2); implausible knee: 25, counted by group and age bin in `tables/qc_counts.csv`, listed in `data/qc/knee_flagged.csv`.
+5. **Ten overlays per group inspected and saved: PASS**, with two findings.
+   - Selection was by the rule declared before running. The 20 PNGs are in `data/qc/`, with one sentence each in the QC entry.
+   - 18/20 fits look sane.
+   - TD150 and AS151 (both knee-flagged) are not sane in the delta band: a low-frequency bump is dropped by specparam's edge rule and reported as zero periodic delta.
+6. **Whole thing reruns from a clean environment: PASS.**
+   - Clean copy of `src/`, `tests/`, `scripts/`, `refs/`, `config.yaml`, `pyproject.toml`, `requirements.txt` (no `data/`, `tables/` or venv). Fresh `venv` from Homebrew Python 3.13.7, `pip install -r requirements.txt` (freeze matched the file exactly), then `bash scripts/run_all.sh`: exit 0.
+   - Every output is byte-identical to the project copy: `features.csv`, `peaks.csv`, `validate_delta.csv`, all QC CSVs and the 23 QC PNGs, and the five tables written there (`delta_rules`, `qc_counts`, `qc_fit_quality`, `validation`, `deviations`). All 9 arrays in `fits.npz` are equal.
+   - Scope: same machine and base interpreter; the synthetic grid (`--with-sim`) was not part of this rerun. Its own from-scratch reproduction is in the 2026-11-03 entry.
+
+**Verdict:** 5 of 6 pass; item 2 fails as written. The primary analysis is not run until item 2 is decided.
+
+**2026-11-05 — Item 2 resolved.** Decision: item 2 means convergence, as v2.2’s Inclusion section already states; the item’s wording is corrected in v2.3. Convergence is 344/344 in both modes and every age bin: PASS. The 25 knee-flagged recordings stay in the primary analysis and are dropped only in the predeclared sensitivity, because excluding them conditions on the knee-mode outcome, one arm of the comparison, and would push the paired median away from zero on exactly the recordings where the two models coincide. Gate: 6 of 6. The primary analysis may run after the Fig 1e diagnostic above.
+
+## 2026-11-05 — Fig 1e diagnostic and side checks: results
+
+`python src/fig1e_diagnostic.py` → `tables/fig1e_diagnostic.csv`, `tables/periodic_gap_scaling.csv`; per recording in `data/fig1e_fits.csv` (local). Added to `scripts/run_all.sh` after `validation.py`.
+
+**Fitter check first** (`tests/test_fig1e.py`). The test rounds to 7 significant figures; the supplement is rounded to 6 decimal places, coarser at high frequencies (4 significant figures at 49.5 Hz). The worst rounding bound in log10 is 3e-5, below every max residual observed, so the test’s gentler rounding does not affect the outcome.
+
+**Outcomes, by the readings declared above.** All 344 fits converged.
+
+| | (A) | (B) | (C) | unclassified |
+|---|---|---|---|---|
+| TD (185) | 0 | 120 | 0 | 65 |
+| AS (159) | 0 | 91 | 0 | 68 |
+
+- **Precision correction.** The readings above say Fig 1e is stored to 7 significant figures. That holds at the low end (17.52503 at 1 Hz); at the high end it is 6 decimal places (0.007249, the smallest value, at 49.5 Hz). So rounding error in log10 runs from about 2e-7 at 1 Hz to about 3e-5 at the smallest values. Both are below the 1e-4 cut, so the declared cuts are unaffected.
+- **No recording is a single knee curve.** The smallest max residual of the 344 is 2.0e-4 (AS109), at 1.0 Hz, where rounding is about 2e-7, so about 1,000 times rounding. The largest residual is at 1.0 or 1.5 Hz in 341 of 344 recordings; the median is 7.4e-3 (5th–95th percentile 1.0e-3 to 3.3e-2). (A) and (C) are rejected for every recording, and that holds whatever "structured" means.
+- **211 are (B)** by the declared criterion (max residual > 1e-3 and lag-1 autocorrelation ≥ 0.5).
+- **133 are unclassified.** 17 have a max residual between 1e-4 and 1e-3. 116 exceed 1e-3 but have autocorrelation < 0.5.
+- **Where the misfit sits (observation, not a reclassification).** The largest residual is at 1.0 Hz in 310 of 344 recordings, and at 1.5 Hz in 31 more. In the unclassified ones it is concentrated in the lowest three or four bins (1–2.5 Hz), often with a sign change between 1.0 and 1.5 Hz (AS33: −0.020, +0.022, +0.014 at 1.0, 1.5, 2.0 Hz), and near zero above. A difference concentrated at the low edge does not register in a lag-1 autocorrelation over 98 evenly spaced bins, so the declared "structured" test undercounts it. The declared counts stand as reported. Whether to reclassify with a different structure measure is a separate, labeled-as-post-hoc decision.
+- **Fitted vs reported parameters.** Median |b − offset| 0.0035, median |χ − exponent| 0.0023, largest 0.23 and 0.15 (AS95). The best single curve through Fig 1e is close to the reported parameters but not equal to them.
+
+**Reading.** Fig 1e is not the curve of one knee fit, for any recording. That rules out (A) and (C) and is consistent with (B): an average of fitted curves, or a smoothed curve. The data do not say which kind of averaging. The misfit is largest at 1–2.5 Hz, where knee curves with different knees differ most.
+
+**Side check 1: edge-rule cases.** Reported periodic delta is TD150 0.795 and AS151 1.448; our knee refit gives 0 for both. The paper's fit saw the low-frequency bumps that the edge rule drops in a single fit of Fig 1a. That is consistent with fits made on spectra other than Fig 1a (for example per region, where the bump need not sit at the 1 Hz edge), but does not show it.
+
+**Side check 2: does the gap scale with reported periodic delta?** Refit − reported, OLS slope [95% CI], Spearman ρ:
+
+| | vs reported | vs pair mean |
+|---|---|---|
+| AS | −0.075 [−0.139, −0.010], ρ −0.31 | +0.013 [−0.054, +0.080], ρ −0.17 |
+| TD | −0.254 [−0.330, −0.178], ρ −0.58 | −0.102 [−0.194, −0.010], ρ −0.47 |
+
+- **AS: blurring not supported by the declared rule.** The slope is negative against reported only, which regression to the mean produces by itself; against the pair mean it is flat. The AS gap of −0.125 is an offset that does not grow with reported periodic delta.
+- **TD:** the slope is negative on both axes. This was not predicted, and the mean TD gap is about 0 (−0.017).
+
+**Where this leaves the open question.** Fig 1e is not a single knee fit, so the reported features come from a computation other than one knee fit of the Fig 1a spectrum. That is the email's second question, now a request to confirm: were the aperiodic component and the reported features computed per region (or per channel) and then averaged? The AS periodic-delta gap is not explained by the blurring mechanism as tested; it stays open.
+
+**Gate item 6, extended.** The clean-environment rerun (same fresh venv, clean copy updated with `src/fig1e_diagnostic.py`, `tests/test_fig1e.py` and the new `run_all.sh`) exits 0 with 24 tests passing. `fig1e_diagnostic.csv`, `periodic_gap_scaling.csv` and `data/fig1e_fits.csv` are byte-identical to the project copy, and so are all earlier outputs.
+
+Per the gate resolution, the primary analysis may now run.
+
+## 2026-11-14 — Gap subsets and Fig 1e cross-tabs (post hoc, requested after the Nov 5 results)
+
+`python src/gap_subsets.py` → `tables/periodic_gap_subsets.csv`, `tables/fig1e_crosstabs.csv`. Neither test was declared before the Nov 5 results; both are labeled post hoc.
+
+**(i) Gap (knee refit − reported periodic delta) by refit peak-model delta.**
+
+| | n | mean gap | median gap [IQR] | mean reported | share of the group's summed gap |
+|---|---|---|---|---|---|
+| AS, refit = 0 | 4 | −0.936 | −0.812 [−1.046, −0.702] | 0.936 | 19% |
+| AS, refit > 0 | 155 | −0.104 | −0.098 [−0.171, −0.035] | 0.701 | 81% |
+| TD, refit = 0 | 0 | — | — | — | — |
+| TD, refit > 0 | 185 | −0.017 | −0.006 [−0.055, +0.045] | 0.133 | 100% |
+
+- The exact-zero split tests nothing in TD: no TD refit is exactly 0. A fitted peak anywhere leaves a small Gaussian tail in 2–4 Hz, so "> 0" includes near-zero values (89 TD and 23 AS recordings are between 0 and 0.01).
+- **Added alongside (my split, not requested): < 0.01 vs ≥ 0.01.** AS < 0.01: n 27, mean −0.287 (39% of the AS gap); AS ≥ 0.01: n 132, mean −0.091 (61%). TD < 0.01: n 89, mean −0.028, median +0.009; TD ≥ 0.01: n 96, mean −0.007.
+- **Reading.** The four AS recordings with refit exactly 0 (AS68, AS119, AS150, AS151) carry 19% of the AS gap. All four have a knee-mode raw-residual periodic delta above 0.3 (0.61–1.11), so all four count as edge-rule drops under PROTOCOL secondary (d). Knee-mode count of that measure: AS 4, TD 0; the fixed-mode count waits for the primary analysis. Excluding them leaves an AS gap of −0.104, and among recordings with a refit delta ≥ 0.01 it is −0.091, against −0.007 in TD. Edge-rule drops add to the AS gap but do not account for most of it. Most of it sits in recordings where the refit does fit delta peaks and finds less than reported.
+
+**(ii) Fig 1e status vs refit knee flag and vs age < 3, 2 × 2 per group** (Fisher exact tests, descriptive):
+
+| group | status | vs | status & yes | status & no | not status & yes | not status & no | odds ratio | p |
+|---|---|---|---|---|---|---|---|---|
+| TD | unclassified | knee flag | 15 | 50 | 2 | 118 | 17.7 | 3e-6 |
+| TD | unclassified | age < 3 | 41 | 24 | 7 | 113 | 27.6 | 4e-17 |
+| TD | flip | knee flag | 16 | 45 | 1 | 123 | 43.7 | 6e-8 |
+| TD | flip | age < 3 | 44 | 17 | 4 | 120 | 77.6 | 8e-24 |
+| AS | unclassified | knee flag | 7 | 61 | 1 | 90 | 10.3 | 0.02 |
+| AS | unclassified | age < 3 | 25 | 43 | 12 | 79 | 3.8 | 6e-4 |
+| AS | flip | knee flag | 8 | 58 | 0 | 93 | ∞ | 7e-4 |
+| AS | flip | age < 3 | 27 | 39 | 10 | 83 | 5.7 | 2e-5 |
+
+"Unclassified" is the declared Fig 1e outcome against (B) (there are no (A) or (C)). "Flip" means the single-curve residual changes sign between 1.0 and 1.5 Hz.
+
+- **Reading.** The edge-localized misfit belongs to the youngest children and to recordings whose refit knee is flagged. In TD, 44 of the 48 recordings under 3 flip, against 17 of 137 older; 16 of the 17 knee-flagged TD recordings flip. AS shows the same direction, more weakly.
+- These are the spectra with little or no bend above 1 Hz. If Fig 1e averages several knee curves (outcome B), curves whose knees sit at or below 1 Hz would differ from a single knee curve mainly in the lowest bins. That is the pattern seen, and it is the pattern the lag-1 structure test misses. This is consistent with (B); it does not establish it.
+- Both status variables and the knee flag are partly functions of the same spectral shape, so the associations are not independent evidence.
+
+## 2026-11-14 — Gate item 6 with the synthetic grid: 6/6, synthetic reproduced, 2026-11-14, commit 7a2bf66
+
+- **What ran.** `git archive 7a2bf66` (clean tree; HEAD at the time) exported to an empty directory; a fresh `venv` from Homebrew Python 3.13.7 at `./.venv` inside it (the path `run_all.sh` now uses); `python -m pip install -r requirements.txt` (freeze identical to the file); `bash scripts/run_all.sh --with-sim`.
+- **Result.** Exit 0 in 12 min 46 s. Supplement sha256 OK; 344/344 converged in both modes; knee flags TD 17, AS 8; Fig 1e outcomes as on Nov 5; 8,000 synthetic fits; 24/24 tests.
+- **Committed outputs.** All 8 tables in `tables/` and `figures/fig_synthetic_validation.png` regenerated byte-identical to their committed versions at 7a2bf66, including `tables/sim_summary.csv` and the figure.
+- **Local outputs.** Every file the run wrote to `data/` is byte-identical to the project's local copy: `features.csv`, `peaks.csv`, `fig1e_fits.csv`, `sim_spectra.csv`, `validate_delta.csv`, the QC CSVs and all 23 QC PNGs. All 9 arrays in `fits.npz` are equal.
+- **Gate: 6 of 6**, with item 6 now covering the synthetic grid as well as the analysis pipeline.
+- **Not covered by the hash.** `src/gap_subsets.py` and its two tables (2026-11-14, uncommitted when this ran) are not in 7a2bf66. Run in the same fresh environment afterwards, they reproduce the project's tables byte-identically, but that check is not pinned to a commit.

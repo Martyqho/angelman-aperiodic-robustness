@@ -1,0 +1,9 @@
+group,status,versus,status_and_versus,status_not_versus,not_status_versus,not_status_not_versus,fisher_odds_ratio,fisher_p
+TD,unclassified,knee_flag,15,50,2,118,17.7,3.4006e-06
+TD,unclassified,age_lt_3,41,24,7,113,27.577,3.697e-17
+TD,flip,knee_flag,16,45,1,123,43.733,5.5978e-08
+TD,flip,age_lt_3,44,17,4,120,77.647,7.6978e-24
+AS,unclassified,knee_flag,7,61,1,90,10.328,0.021319
+AS,unclassified,age_lt_3,25,43,12,79,3.8275,0.00062541
+AS,flip,knee_flag,8,58,0,93,inf,0.00067801
+AS,flip,age_lt_3,27,39,10,83,5.7462,1.6852e-05

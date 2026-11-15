@@ -6,7 +6,7 @@
 # Override the interpreter with PYTHON=/path/to/python.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-PY="./.venv/bin/python"
+PY="${PYTHON:-./.venv/bin/python}"
 
 "$PY" --version
 "$PY" -c "import hashlib, yaml; c = yaml.safe_load(open('config.yaml'))['paper']; \
@@ -18,6 +18,7 @@ echo "== fit pass (src/fit_spectra.py)";      "$PY" src/fit_spectra.py
 echo "== QC (src/qc.py)";                     "$PY" src/qc.py
 echo "== validation (src/validation.py)";     "$PY" src/validation.py
 echo "== Fig 1e diagnostic (src/fig1e_diagnostic.py)"; "$PY" src/fig1e_diagnostic.py
+echo "== gap subsets and Fig 1e cross-tabs (src/gap_subsets.py)"; "$PY" src/gap_subsets.py
 if [[ "${1:-}" == "--with-sim" ]]; then
   echo "== synthetic validation (src/simulate.py)"; "$PY" src/simulate.py
 fi
