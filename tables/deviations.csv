@@ -1,0 +1,8 @@
+item,group,measure,reported,ours,difference,relative,source
+Total 1-50 Hz,AS159,value (0.5 x sum of 98 bins),417.37,416.19,-1.1793,-0.0028254,src/validate.py check 1; only recording of 344 off by > 1e-5
+"exponent, knee refit",TD,mean over recordings; difference = refit - reported,2.2337,2.2216,-0.012147,,"tables/validation.csv (n 185, LoA -0.216 to 0.191, median |d| 0.063)"
+"offset, knee refit",TD,mean over recordings; difference = refit - reported,2.2916,2.3318,0.040148,,"tables/validation.csv (n 185, LoA -0.244 to 0.324, median |d| 0.076)"
+"periodic_delta, knee refit",TD,mean over recordings; difference = refit - reported,0.13286,0.11596,-0.016904,,"tables/validation.csv (n 185, LoA -0.255 to 0.221, median |d| 0.051)"
+"exponent, knee refit",AS,mean over recordings; difference = refit - reported,2.6788,2.677,-0.0018446,,"tables/validation.csv (n 159, LoA -0.352 to 0.348, median |d| 0.079)"
+"offset, knee refit",AS,mean over recordings; difference = refit - reported,3.2342,3.2889,0.054702,,"tables/validation.csv (n 159, LoA -0.459 to 0.569, median |d| 0.115)"
+"periodic_delta, knee refit",AS,mean over recordings; difference = refit - reported,0.70659,0.58183,-0.12476,,"tables/validation.csv (n 159, LoA -0.514 to 0.265, median |d| 0.114)"
