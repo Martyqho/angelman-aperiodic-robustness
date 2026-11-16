@@ -1,0 +1,21 @@
+group,subset,feature,series,n,slope_per_doubling_of_age,ci_lower,ci_upper,label
+TD,all,exponent,knee,185,0.31964,0.27046,0.36964,predeclared: PROTOCOL (c)
+TD,all,exponent,fixed,185,0.078398,0.050461,0.10694,predeclared: PROTOCOL (c)
+TD,all,exponent,fixed_minus_knee,185,-0.24124,-0.27446,-0.20892,predeclared: PROTOCOL (c) slope difference; expectation 2026-11-05
+TD,all,offset,knee,185,0.44683,0.3674,0.52856,predeclared: PROTOCOL (c)
+TD,all,offset,fixed,185,0.060545,0.00978,0.11257,predeclared: PROTOCOL (c)
+TD,all,offset,fixed_minus_knee,185,-0.38629,-0.43881,-0.33631,predeclared: PROTOCOL (c)
+TD,all,periodic_delta_peak,knee,185,-0.11141,-0.13941,-0.083574,predeclared: PROTOCOL (c)
+TD,all,periodic_delta_peak,fixed,185,-0.087516,-0.11289,-0.06184,predeclared: PROTOCOL (c)
+TD,all,periodic_delta_peak,fixed_minus_knee,185,0.023892,0.0084759,0.038844,predeclared: PROTOCOL (c)
+TD,no_knee_flag,exponent,fixed_minus_knee,168,-0.2267,-0.26623,-0.19107,predeclared: PROTOCOL (c) slope difference; expectation 2026-11-05
+AS,all,exponent,knee,159,0.069585,-0.0038152,0.14919,exploratory (AS)
+AS,all,exponent,fixed,159,-0.10917,-0.14643,-0.069767,exploratory (AS)
+AS,all,exponent,fixed_minus_knee,159,-0.17875,-0.23303,-0.12529,exploratory (AS)
+AS,all,offset,knee,159,0.064394,-0.049817,0.18242,exploratory (AS)
+AS,all,offset,fixed,159,-0.22587,-0.28007,-0.16893,exploratory (AS)
+AS,all,offset,fixed_minus_knee,159,-0.29026,-0.37164,-0.21038,exploratory (AS)
+AS,all,periodic_delta_peak,knee,159,-0.27401,-0.33928,-0.20019,exploratory (AS)
+AS,all,periodic_delta_peak,fixed,159,-0.27095,-0.34698,-0.18684,exploratory (AS)
+AS,all,periodic_delta_peak,fixed_minus_knee,159,0.0030663,-0.045079,0.048748,exploratory (AS)
+AS,no_knee_flag,exponent,fixed_minus_knee,151,-0.16193,-0.21327,-0.11334,exploratory (AS)

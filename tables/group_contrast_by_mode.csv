@@ -1,0 +1,8 @@
+feature,mode,measure,estimate,ci_lower,ci_upper,median_AS,median_TD,n_AS,n_TD,label
+periodic_delta_peak,knee,welch_cohens_d_AS_vs_TD,1.272,1.0768,1.4945,0.48656,0.014552,159,185,predeclared: PROTOCOL (b)
+periodic_delta_peak,knee,median_AS_minus_median_TD,0.47201,0.37551,0.64851,0.48656,0.014552,159,185,exploratory
+periodic_delta_peak,fixed,welch_cohens_d_AS_vs_TD,1.7211,1.5044,1.9839,0.94313,0.22813,159,185,predeclared: PROTOCOL (b)
+periodic_delta_peak,fixed,median_AS_minus_median_TD,0.715,0.6186,0.89256,0.94313,0.22813,159,185,exploratory
+periodic_delta_peak,fixed_minus_knee,change_in_median_AS_minus_median_TD,0.243,0.13529,0.33866,,,159,185,exploratory (paired over the same resamples)
+exponent,knee,welch_cohens_d_AS_vs_TD,0.87197,0.65519,1.1057,2.7029,2.2088,159,185,predeclared: PROTOCOL (b)
+exponent,fixed,welch_cohens_d_AS_vs_TD,1.5292,1.323,1.7591,2.037,1.6861,159,185,predeclared: PROTOCOL (b)

@@ -1,0 +1,19 @@
+feature,subset,group,n,median_d,median_ci_lower,median_ci_upper,mean_d,frac_d_gt_0,median_knee,median_fixed,label
+delta_exponent,all,all,344,-0.57533,-0.63502,-0.49928,-0.57844,0.043605,2.467,1.8787,exploratory (fixed - knee by group); PROTOCOL (b) is in group_contrast_by_mode.csv
+delta_exponent,all,TD,185,-0.50403,-0.63109,-0.43909,-0.54475,0.054054,2.2088,1.6861,exploratory (fixed - knee by group); PROTOCOL (b) is in group_contrast_by_mode.csv
+delta_exponent,all,AS,159,-0.60255,-0.69567,-0.53104,-0.61763,0.031447,2.7029,2.037,exploratory (fixed - knee by group); PROTOCOL (b) is in group_contrast_by_mode.csv
+delta_exponent,knee_flagged,all,25,0.013864,-0.0084187,0.063303,0.043974,0.56,1.4278,1.4247,checks the 2026-11-05 expectation (delta-exponent ~ 0 when knee-flagged)
+delta_exponent,knee_flagged,TD,17,0.028272,-0.0084187,0.067436,0.04074,0.58824,1.3634,1.3708,checks the 2026-11-05 expectation (delta-exponent ~ 0 when knee-flagged)
+delta_exponent,knee_flagged,AS,8,-0.00039663,-0.039088,0.049737,0.050848,0.5,1.823,1.8024,checks the 2026-11-05 expectation (delta-exponent ~ 0 when knee-flagged)
+delta_exponent,no_knee_flag,all,319,-0.61186,-0.68122,-0.55937,-0.62721,0.0031348,2.5287,1.8952,checks the 2026-11-05 expectation (delta-exponent ~ 0 when knee-flagged)
+delta_exponent,no_knee_flag,TD,168,-0.58581,-0.68328,-0.46792,-0.60399,0,2.3414,1.7068,checks the 2026-11-05 expectation (delta-exponent ~ 0 when knee-flagged)
+delta_exponent,no_knee_flag,AS,151,-0.63564,-0.71137,-0.56876,-0.65305,0.0066225,2.7176,2.0516,checks the 2026-11-05 expectation (delta-exponent ~ 0 when knee-flagged)
+delta_offset,all,all,344,-0.85564,-0.99146,-0.74962,-0.89105,0.043605,2.8206,1.8467,exploratory (fixed - knee by group); PROTOCOL (b) is in group_contrast_by_mode.csv
+delta_offset,all,TD,185,-0.78848,-0.95646,-0.68305,-0.8466,0.054054,2.3597,1.5166,exploratory (fixed - knee by group); PROTOCOL (b) is in group_contrast_by_mode.csv
+delta_offset,all,AS,159,-0.91521,-1.0526,-0.80446,-0.94277,0.031447,3.2281,2.3527,exploratory (fixed - knee by group); PROTOCOL (b) is in group_contrast_by_mode.csv
+delta_offset,knee_flagged,all,25,0.020555,-0.010514,0.092815,0.055409,0.56,1.2459,1.3024,exploratory (fixed - knee by group); PROTOCOL (b) is in group_contrast_by_mode.csv
+delta_offset,knee_flagged,TD,17,0.040724,-0.0097151,0.097299,0.053741,0.58824,1.1394,1.18,exploratory (fixed - knee by group); PROTOCOL (b) is in group_contrast_by_mode.csv
+delta_offset,knee_flagged,AS,8,-0.00084077,-0.061005,0.069776,0.058953,0.5,2.1522,2.1592,exploratory (fixed - knee by group); PROTOCOL (b) is in group_contrast_by_mode.csv
+delta_offset,no_knee_flag,all,319,-0.93261,-1.0468,-0.83849,-0.96523,0.0031348,2.8841,1.8834,exploratory (fixed - knee by group); PROTOCOL (b) is in group_contrast_by_mode.csv
+delta_offset,no_knee_flag,TD,168,-0.90345,-1.0776,-0.72204,-0.93771,0,2.4513,1.548,exploratory (fixed - knee by group); PROTOCOL (b) is in group_contrast_by_mode.csv
+delta_offset,no_knee_flag,AS,151,-0.99201,-1.0716,-0.83849,-0.99584,0.0066225,3.3776,2.3682,exploratory (fixed - knee by group); PROTOCOL (b) is in group_contrast_by_mode.csv

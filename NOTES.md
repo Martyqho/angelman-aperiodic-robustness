@@ -402,3 +402,274 @@ Per the gate resolution, the primary analysis may now run.
 - **Local outputs.** Every file the run wrote to `data/` is byte-identical to the project's local copy: `features.csv`, `peaks.csv`, `fig1e_fits.csv`, `sim_spectra.csv`, `validate_delta.csv`, the QC CSVs and all 23 QC PNGs. All 9 arrays in `fits.npz` are equal.
 - **Gate: 6 of 6**, with item 6 now covering the synthetic grid as well as the analysis pipeline.
 - **Not covered by the hash.** `src/gap_subsets.py` and its two tables (2026-11-14, uncommitted when this ran) are not in 7a2bf66. Run in the same fresh environment afterwards, they reproduce the project's tables byte-identically, but that check is not pinned to a commit.
+
+## 2026-11-14 — Primary analysis and secondaries (a)–(e)
+
+`python src/analysis.py` (6 s; in `run_all.sh` after `qc.py`) → `tables/primary.csv`, `tables/secondary_a.csv` … `secondary_e.csv`, `tables/group_contrast_by_mode.csv`; `figures/fig_primary_paired.png`, `figures/fig_knee_flags_age.png`, `figures/fig_group_contrast_by_mode.png`. Local only: `data/fig_primary_paired_points.png`. The label of every row (predeclared / exploratory / post hoc) was fixed in the script's docstring before the first run.
+
+**Spec vs PROTOCOL, and other choices.**
+- *Inputs.* `features.csv` is wide (one row per recording, `_knee` / `_fixed` columns), not one row per recording × mode; used as is. (a) and the gap decomposition in (d) compare with the paper's reported values, which are not in `features.csv`; those two read them through `load_supplement.load_reported`. Nothing else is read, nothing is refit.
+- *Cluster bootstrap.* Participant IDs are in `features.csv` (Fig 2 ID: 185 TD participants, one recording each; 95 AS participants), so the predeclared sensitivity runs. Cluster key = group + ID. TD's cluster CI equals its recording CI by construction (185 singletons); it differs only for AS and overall.
+- *(b).* The spec's Δexponent and Δoffset (fixed − knee) by group are in `secondary_b.csv`, labelled exploratory. PROTOCOL (b) is the AS-vs-TD Welch Cohen's d per mode for periodic delta and exponent; it is in `group_contrast_by_mode.csv`, labelled predeclared. `secondary_b.csv` also has knee-flagged and unflagged subsets, added to test the 2026-11-05 expectation.
+- *(c).* Slopes on log2(age), i.e. per doubling of age (PROTOCOL says log age; the spec says age). The slope of the paired difference equals the fixed − knee slope difference, so the Δexponent slope is PROTOCOL's "slope difference by paired bootstrap". PROTOCOL (c)'s per-mode TD slopes for exponent, offset and periodic delta are included. AS rows are exploratory. No GAM.
+- *(d).* PROTOCOL's convergence, fit-error and low-frequency peak counts are included alongside the spec's three blocks. The gap decomposition is post hoc (2026-11-14) and labelled so.
+- *Group contrast.* The AS − TD median difference per mode, and its change from knee to fixed, are exploratory: PROTOCOL names the contrast only as Cohen's d.
+- *Figure.* "d against the pair mean" as a scatter would put per-recording values in a committed figure. The committed version bins the pair mean into quintiles per group (37 TD / 31–32 AS per bin), showing the bin median and IQR of d plus the group median line and CI band. The point scatter is local.
+- *Bootstrap.* 10,000 resamples, seed 20261029, percentile 95% CI; each interval uses its own freshly seeded generator, so each CI is reproducible on its own.
+- *Cross-checks.* `secondary_a.csv` equals `validation.csv` on all 12 shared rows; the knee-flag counts in `secondary_d.csv` equal `qc_counts.csv`.
+
+**Primary: d = fixed − knee periodic delta (peak model).**
+
+| | n | median d [95% CI] | participant-cluster CI | d > 0 | mean d [CI], descriptive |
+|---|---|---|---|---|---|
+| all | 344 | +0.197 [0.161, 0.229] | [0.158, 0.233] | 92% | +0.268 [0.241, 0.297] |
+| TD | 185 | +0.110 [0.094, 0.129] | same (singletons) | 89% | +0.131 [0.113, 0.150] |
+| AS | 159 | +0.426 [0.349, 0.481] | [0.331, 0.482] | 96% | +0.428 [0.384, 0.474] |
+
+Without the 25 knee-flagged recordings (predeclared sensitivity): all +0.217 [0.183, 0.241], TD +0.123 [0.102, 0.144], AS +0.446 [0.394, 0.502]. Excluding them moves the medians up slightly, as expected for recordings where the two fits coincide; the conclusions do not change.
+
+**(e) Same comparison on the raw-residual periodic delta:** all +0.282 [0.254, 0.309], TD +0.205 [0.182, 0.231], AS +0.490 [0.431, 0.553]. Same direction and ordering, larger in TD.
+
+**What the study set out to say (PROTOCOL "can say").**
+- *Is the AS–TD contrast stable under the change of model?* No: it grows. Periodic delta Cohen's d (PROTOCOL (b)) goes from 1.27 [1.08, 1.49] under knee to 1.72 [1.50, 1.98] under fixed; exponent from 0.87 [0.66, 1.11] to 1.53 [1.32, 1.76]. AS − TD median periodic delta goes from +0.472 [0.376, 0.649] to +0.715 [0.619, 0.893], a change of +0.243 [0.135, 0.339] (exploratory).
+- *Is the TD age association stable?* No, not for exponent. The TD exponent slope (PROTOCOL (c)) is +0.320 per doubling of age [0.270, 0.370] under knee and +0.078 [0.050, 0.107] under fixed, about three quarters smaller. Offset: +0.447 vs +0.061. Periodic delta is closer: −0.111 vs −0.088, with a slope difference of +0.024 [0.008, 0.039].
+- *Exploratory (AS):* the AS exponent age slope changes sign between modes: knee +0.070 [−0.004, +0.149], fixed −0.109 [−0.146, −0.070].
+
+**(b) Fixed − knee aperiodic parameters (exploratory).** Δexponent TD −0.504 [−0.631, −0.439], AS −0.603 [−0.696, −0.531]; Δoffset TD −0.788, AS −0.915. Positive in only 15 recordings, the same 15 for both parameters, 13 of them with knee ≤ 0.
+
+**(d)** Edge-rule count (peak-model delta 0, raw-residual delta > 0.3): knee TD 0, AS 4; fixed TD 0, AS 3. Knee-flag rates by age bin as in the QC entry (`fig_knee_flags_age.png`). Convergence 344/344 in both modes. Mean number of peaks below 6 Hz: knee TD 0.68, AS 1.40; fixed TD 0.78, AS 1.28.
+
+**Expectations, clause by clause.**
+
+PROTOCOL, 2026-11-03 (from synthetic validation):
+
+| clause | result | verdict |
+|---|---|---|
+| fixed exceeds knee by roughly 0.3 in TD | +0.110 [0.094, 0.129]; 89% of TD recordings d > 0 | direction held; **size not held** (the CI excludes 0.3; about a third of it) |
+| … and by more in AS | +0.426 [0.349, 0.481] | held |
+| the AS–TD contrast under fixed mode does not vanish and may increase | Cohen's d 1.27 → 1.72; median difference +0.47 → +0.72, change +0.24 [0.14, 0.34] | held; it increased |
+| because AS knee frequencies are lower and exponents steeper, for a reason unrelated to oscillations | — | **not tested** by these numbers: they measure the change in the contrast, not its cause |
+
+PROTOCOL, 2026-11-05 (age pattern of knee flags):
+
+| clause | result | verdict |
+|---|---|---|
+| Δexponent ≈ 0 for knee-flagged recordings | TD +0.028 [−0.008, +0.067] (n 17); AS −0.000 [−0.039, +0.050] (n 8) | held |
+| an age trend in Δexponent | TD −0.241 per doubling of age [−0.274, −0.209] | present |
+| the flagged recordings may themselves produce that trend | without them: −0.227 [−0.266, −0.191], 94% of the full-sample slope | **not supported**: the trend is in the unflagged recordings |
+
+So two of the four 2026-11-03 clauses held, one failed on size, and one is untested. Of the 2026-11-05 clauses, the first held, the trend is present, and the proposed cause of the trend is not supported.
+
+**Open: the synthetic generator overpredicted the TD gap about 3×.** Its TD-like no-peak baseline gave fixed − knee +0.32; the real TD median is +0.11. The generator has one knee curve, white log10 noise and no real peaks. Not explained here.
+
+**What has now been seen.** As of this entry, fixed-mode aggregates and the fixed − knee contrast have been computed. Nothing predeclared remains unseen.
+
+**Reproduction.** A fresh copy of the tracked and new files (no `data/`) with a new venv from `requirements.txt` and `bash scripts/run_all.sh`: exit 0, 27/27 tests. All 51 outputs are byte-identical to the project's (17 tables, 4 figures, 30 local `data/` files). `sim_summary.csv` and the synthetic figure were copies, not regenerated (no `--with-sim`); their reproduction is the 7a2bf66 entry. This rerun is of uncommitted files, so it is not pinned to a commit.
+
+## 2026-11-16 — Why the synthetic baseline overpredicted the TD gap: design and readings, declared before the run
+
+Post hoc and exploratory. Written after the primary results (2026-11-14) and after printing the TD knee-fit quantiles and bin counts below, before computing any fixed − knee value by bin or fitting any twin.
+
+**Gap to explain.** Synthetic (a), nlv 0.02: paired fixed − knee periodic delta, median +0.321 (200 replicates). Real TD: +0.110. Difference 0.21.
+
+**What differs.** (a) is one knee curve at the TD medians (b₀ 2.36, k₀ 16.5, χ₀ 2.21; knee 3.56 Hz) with no peaks and white log10 noise (SD 0.02). Real TD knee fits spread widely: knee frequency 1.0–6.4 Hz (10th–90th percentile; 9 more have knee ≤ 0 and no knee frequency), χ 1.5–3.0. Their knee-model residual error has median 0.029, and they have 4 fitted peaks (median). Knee fits of the generator's spectra find 11 peaks (median), all noise.
+
+**Step 1, no new fits (`features.csv`).** TD median d by knee-frequency bin, with n per bin:
+
+| bin | < 2 Hz | 2–3 Hz | 3–4.2 Hz | 4.2–6 Hz | ≥ 6 Hz | no knee frequency |
+|---|---|---|---|---|---|---|
+| n | 43 | 25 | 33 | 47 | 28 | 9 |
+
+Also computed in recordings near the baseline (knee 3.0–4.2 Hz and χ 2.0–2.4; n 13). Each row also gets the median fixed and median knee periodic delta, because in TD the difference of medians (0.228 − 0.015) is twice the median difference.
+
+Reading:
+- **Near-baseline median d above 0.215** (closer to the generator's 0.32 than to 0.11): recordings like the baseline do show the generator's gap. The population median is low because most recordings sit elsewhere.
+- **Below 0.215:** even baseline-like recordings show a small gap. The cause is in what the generator leaves out.
+- **CI spans 0.215:** with n 13, step 1 is then unresolved and step 2 decides.
+
+**Step 2, twins (`src/sim_gap_twins.py`).** Each TD recording is rebuilt from its own knee-mode fit and refit in both modes with `fit_one`:
+
+| cell | aperiodic | peaks | noise |
+|---|---|---|---|
+| M0 | median (b₀, k₀, χ₀) | none | white, SD 0.02 |
+| T00 | own (b, k, χ) | none | white, SD 0.02 |
+| T10 | own | own knee-fit peak model | white, SD 0.02 |
+| T01 | own | none | own knee-model residual (log10 PSD − aperiodic − peaks) |
+| T11 | own | own peaks | own residual: the real spectrum |
+
+White noise for recording j (features order) uses seed 20261029 + j: the same noise vectors as (a)'s replicates 0–184 at nlv 0.02. Closure check: T11 must reproduce the real +0.110.
+
+Effects on median d. The first three add up exactly to M0 − T11:
+- **Heterogeneity** of aperiodic parameters = M0 − T00.
+- **Real peaks** = mean of (T00 − T10) and (T01 − T11).
+- **Real residual** instead of white noise = mean of (T00 − T01) and (T10 − T11).
+- **Interaction** = (T00 − T10) − (T01 − T11). Reported, not part of the sum.
+
+Readings, as shares of M0 − T11:
+- A factor **carries** the gap at 50% or more, **contributes** at 20–50%, and is **negligible** below 20%.
+- If |interaction| is 20% or more of M0 − T11, peaks and noise are not separable, and only their sum is reported as identified.
+
+Bootstrap CIs are over recordings (10,000 resamples, seed 20261029). Every cell uses the same resamples, so the effects are paired.
+
+**Scope.**
+- The twins inherit the knee-mode decomposition: its aperiodic curve, its peaks and its residual. They explain why the generator missed the real gap; they do not say which aperiodic model is right.
+- Flagged recordings are included. A knee ≤ 0 still gives a valid curve on 1–49.5 Hz (k > −1 for all nine); their knee frequency is undefined, so they form their own bin.
+- Per-recording twin values stay in `data/`. Aggregates go in `tables/sim_gap_twins.csv` and `tables/sim_gap_by_knee_freq.csv`.
+- No change to `simulate.py` or `sim_summary.csv`.
+
+## 2026-11-16 — Why the synthetic baseline overpredicted the TD gap: results
+
+**Run.** `src/sim_gap_twins.py` fits 185 TD recordings × 5 cells × 2 modes, 1,850 fits, all converged, in 2 min 32 s.
+- **Closure.** T11 rebuilds each recording as aperiodic + peaks + residual. It reproduces the real TD median d exactly (0.110248), with a per-recording maximum |difference| of 1.5e-5.
+- **M0 against (a).** M0 matches (a)'s replicates 0–184 to within 1.8e-5 per replicate; the small difference is because b₀, k₀ and χ₀ come from `features.csv` rather than a refit. Replicate 163, the one knee failure in (a), converges here.
+
+**Step 1** (`tables/sim_gap_by_knee_freq.csv`). Median d [95% CI]:
+
+| knee frequency | n | real d | T00 twin d (own aperiodic only) | real fixed / knee periodic delta |
+|---|---|---|---|---|
+| < 2 Hz | 43 | +0.068 [0.014, 0.102] | +0.107 | 0.357 / 0.251 |
+| 2–3 Hz | 25 | +0.120 [0.054, 0.198] | +0.267 | 0.205 / 0.008 |
+| 3–4.2 Hz | 33 | +0.209 [0.106, 0.281] | +0.337 | 0.262 / 0.003 |
+| 4.2–6 Hz | 47 | +0.158 [0.111, 0.221] | +0.383 | 0.202 / 0.006 |
+| ≥ 6 Hz | 28 | +0.104 [0.062, 0.146] | +0.400 | 0.116 / 0.000 |
+| no knee frequency | 9 | −0.010 [−0.147, −0.000] | −0.008 | 0.435 / 0.582 |
+| near baseline (3.0–4.2 Hz, χ 2.0–2.4) | 13 | +0.106 [0.028, 0.281] | +0.337 | 0.110 / 0.000 |
+
+The 3–4.2 Hz and near-baseline rows share their T00 median and their upper CI limit by coincidence: the same recording is the median twin in both subsets.
+
+Under the declared reading, step 1 is **unresolved**: the near-baseline median is +0.106, but its CI spans 0.215 (n 13). The point estimate agrees with step 2 below.
+
+Not declared, descriptive only:
+- Real d peaks in the 3–4.2 Hz bin and falls on both sides.
+- The aperiodic-only twin instead rises with knee frequency. Above 4.2 Hz (75 recordings) it overpredicts real d by 0.23–0.30; below 2 Hz, by 0.04.
+- In the < 2 Hz bin, knee mode itself puts 0.25 of periodic delta in 2–4 Hz (median).
+
+**Step 2** (`tables/sim_gap_twins.csv`). Median d [95% CI], with median periodic delta in each mode:
+
+| cell | d | fixed | knee |
+|---|---|---|---|
+| M0 median aperiodic, white noise | +0.321 [0.314, 0.323] | 0.332 | 0.022 |
+| T00 own aperiodic, white noise | +0.290 [0.267, 0.319] | 0.327 | 0.024 |
+| T10 + own peaks, white noise | +0.186 [0.146, 0.212] | 0.262 | 0.005 |
+| T01 own aperiodic + own residual | +0.195 [0.178, 0.209] | 0.247 | 0.031 |
+| T11 the real spectrum | +0.110 [0.094, 0.129] | 0.228 | 0.015 |
+
+Effects, as shares of M0 − T11 = +0.210 [0.189, 0.227]:
+
+| effect | size [95% CI] | share | reading |
+|---|---|---|---|
+| heterogeneity, M0 − T00 | +0.031 [−0.002, +0.054] | 15% | negligible at the population median (the CI reaches 26%) |
+| real peaks | +0.094 [0.078, 0.115] | 45% | contributes |
+| real residual instead of white noise | +0.085 [0.062, 0.111] | 41% | contributes |
+| interaction | +0.019 [−0.004, +0.055] | 9% | below 20%: separable (the CI reaches 26%) |
+
+**Verdict under the declared readings.**
+- No single factor carries the gap.
+- The recordings' own peaks and their real residual contribute about equally (45% and 41%), and the two are separable. Together they account for 85% (0.18 of 0.21).
+- Spread of the aperiodic parameters is negligible at the population median (15%). Its CI reaches 26%, so "contributes" is not excluded. Within bins it is not small: the T00 twin d runs from 0.11 (< 2 Hz) to 0.40 (≥ 6 Hz); the spread largely cancels at the median.
+- The interaction's CI also reaches 26%, so the peaks/residual split is separable by the declared rule on the point estimate, not decisively.
+- The generator overpredicted mainly because it has no peaks and only white noise at SD 0.02, not because it used one median curve.
+
+**Where the gap goes** (descriptive, not declared; the split threshold of 0.05 was chosen after seeing the cells; `split` rows of `tables/sim_gap_twins.csv`). Median d is not the difference of the two modes' medians: from T00 to T11, the medians give 0.303 → 0.213, but median d falls 0.290 → 0.110. Paired per recording, T00 → T11 (the real spectrum) follows two routes:
+
+| recordings | n | change in knee periodic delta | change in fixed | change in d | d: T00 → T11 |
+|---|---|---|---|---|---|
+| knee mode gains > 0.05 | 64 (35%) | +0.239 | +0.217 | −0.046 | 0.154 → 0.090 |
+| the rest | 121 (65%) | −0.010 | −0.240 | −0.222 | 0.364 → 0.121 |
+
+(medians). In two thirds of recordings, knee mode stays near 0 and fixed mode loses about 0.24 of 2–4 Hz periodic delta once the recording's own peaks and residual are present: this is where the gap at the median goes. In the other third, both modes pick up a real 2–4 Hz peak almost equally, so d barely moves; this is what lifts knee mode's upper tail (q75 0.04 → 0.19, q90 0.05 → 0.40) and, on the mean, outweighs the fixed-mode fall (mean change: knee +0.092, fixed −0.054). How specparam produces the fixed-mode fall (the relative peak threshold, the robust aperiodic fit) is not tested here.
+
+**For the 2026-11-14 verdict.**
+- "Size not held" stands.
+- The PROTOCOL size came from a generator without peaks and with white noise; those two omissions account for most of the 3× overprediction.
+- The direction clauses do not depend on the size.
+- The AS synthetic values would be overstated the same way if the same omissions matter there. Not checked.
+
+**Not done.** The residual effect mixes size and structure. The real knee-model fit error is larger than the generator's: median 0.029 against 0.011 for (a)'s knee fits at nlv 0.02. A sixth cell, with white noise at each recording's own residual SD, would separate the two. Not run.
+
+**Reproduction.** I made a fresh copy of the tracked and new files (no `data/`), built a new venv from `requirements.txt` and ran `bash scripts/run_all.sh`, which now includes the twins step.
+- **Run.** Exit 0 in 3 min 15 s, with 29/29 tests passing. This is the second such run, made after the per-recording split columns were added to `tables/sim_gap_twins.csv`; the first, before that change, also matched on all 54 outputs.
+- **Outputs.** All 54 compared outputs are byte-identical to the project's: 19 tables, 4 figures and 31 local `data/` files. The arrays in `data/fits.npz` are equal.
+- **Not regenerated.** As on 2026-11-14, `sim_summary.csv` and the synthetic figure were copies, since the run did not use `--with-sim`.
+- **Not pinned.** The files are uncommitted, so this run is not tied to a commit.
+
+## 2026-11-16 — Residual effect split into size and structure: design and readings, declared before the run
+
+Post hoc and exploratory. A follow-up to the twins entry above, requested after its results. The quantity to split is the residual effect, +0.085 [0.062, 0.111]: the change in median d from replacing white noise (SD 0.02) with each recording's real knee-model residual.
+
+**Cells.** Two new cells, not one: the residual effect is averaged over both peak levels, so the split needs a cell at each level for the parts to add up exactly.
+
+| cell | aperiodic | peaks | noise |
+|---|---|---|---|
+| T0s | own | none | white, rescaled to the recording's own residual SD |
+| T1s | own | own knee-fit peaks | white, rescaled to the recording's own residual SD |
+
+The noise is T00's vector for that recording (seed 20261029 + j), rescaled so that its sample SD equals the SD of the recording's knee-model residual across the 98 bins. The existing cells are untouched. TD residual SD, 10th–90th percentile: 0.025–0.063, median 0.038. That is 1.9 times the generator's 0.02, and 96% of recordings are above 0.02.
+
+**Effects.** These two add up exactly to the residual effect:
+- **Size** = mean of (T00 − T0s) and (T10 − T1s): raising white noise from SD 0.02 to the recording's own SD.
+- **Structure** = mean of (T0s − T01) and (T1s − T11): replacing white noise of the right SD with the real residual. "Structure" is everything about the real residual except its overall SD: correlation between bins, the shape of its distribution, and where along the frequency axis it is large. The last item is size within the delta band, so a "structure" result does not by itself mean autocorrelation.
+
+**Readings,** as shares of the residual effect, with paired bootstrap CIs (same resamples as before):
+- **Thresholds.** A part carries the residual effect at 50% or more, contributes at 20–50%, and is negligible below 20%. The denominator is small (0.085), so the shares will be noisy; the sizes and their CIs are the primary report.
+- **Negative size effect.** If larger white noise widens the gap rather than narrowing it, structure's share exceeds 100%. Read that as: structure carries the residual effect, and size works against it. Both are reported.
+- **Peak levels disagree.** If the size effect without peaks (T00 − T0s) and with peaks (T10 − T1s) have opposite signs and each is at least 20% of the residual effect in size, the split depends on peaks. It is then not identified as a single number, and both are reported.
+- **Fit error.** Median knee-fit error in T0s and T1s is reported against the real 0.029. Knee mode absorbs some white noise into peaks (11 in (a)), so if the fit errors differ, the size is matched on residual SD, not on fit error.
+
+**Already seen, before this run.** The synthetic grid varied white-noise size at the median curve: (a) gave +0.308 at nlv 0.05 against +0.321 at nlv 0.02. A change of −0.013, about 15% of 0.085, from a larger increase in SD than the median recording's. This points to structure before the run, and is recorded so the reading is not adjusted afterward.
+
+**Outputs.** New rows in `tables/sim_gap_twins.csv`. The existing cell, effect and split rows must come back identical. Per-recording SDs and fits stay in `data/`.
+
+## 2026-11-16 — Residual effect split into size and structure: results
+
+**Run.** `src/sim_gap_twins.py` now has seven cells, 2,590 fits, all converged, in 4 min 16 s. The existing rows came back unchanged:
+- all 12 earlier rows of `tables/sim_gap_twins.csv`, every column exactly equal;
+- `tables/sim_gap_by_knee_freq.csv`, byte-identical;
+- all 925 earlier per-recording d values, identical.
+
+**Cells.** Median d [95% CI], with median periodic delta in each mode and median knee-fit error:
+
+| cell | d | fixed | knee | knee-fit error |
+|---|---|---|---|---|
+| T00 own aperiodic, white 0.02 | +0.290 [0.267, 0.319] | 0.327 | 0.024 | 0.011 |
+| T0s own aperiodic, white at own SD | +0.264 [0.230, 0.293] | 0.315 | 0.042 | 0.022 |
+| T01 own aperiodic, own residual | +0.195 [0.178, 0.209] | 0.247 | 0.031 | 0.019 |
+| T10 + own peaks, white 0.02 | +0.186 [0.146, 0.212] | 0.262 | 0.005 | 0.016 |
+| T1s + own peaks, white at own SD | +0.178 [0.143, 0.198] | 0.264 | 0.024 | 0.026 |
+| T11 the real spectrum | +0.110 [0.094, 0.129] | 0.228 | 0.015 | 0.029 |
+
+**Effects,** as shares of the residual effect (+0.085) and of the whole gap (+0.210):
+
+| effect | size [95% CI] | of residual | of whole gap | reading |
+|---|---|---|---|---|
+| residual size | +0.017 [+0.006, +0.040] | 20% | 8% | contributes, exactly at the threshold (20.1%) |
+| residual structure | +0.068 [+0.040, +0.087] | 80% | 32% | carries |
+| size, without peaks (T00 − T0s) | +0.026 [+0.012, +0.058] | 30% | | |
+| size, with peaks (T10 − T1s) | +0.008 [−0.009, +0.033] | 10% | | |
+
+**Verdict under the declared readings.**
+- **Structure carries the residual effect** (80%).
+- **Size contributes** by the declared rule, but only just: its point share is 20.1%, and its CI covers 6%–47% of the residual effect. Its point share sits on the threshold, so the label decides little; its CI excludes zero.
+- **The peak levels agree in sign,** so the disagreement rule is not triggered. Size matters less once the recording's peaks are present (10% against 30%).
+- **The prior from the grid held.** It pointed to structure, and the reading was not adjusted.
+- **Fit error.** The match is on residual SD, not on fit error. With peaks, the size-matched cell's knee-fit error is 0.026 against the real 0.029; it covers most of the step up from white 0.02 (0.016). Knee mode absorbs some white noise into peaks, which accounts for the rest.
+- **What "structure" covers.** As declared, it includes where along the frequency axis the residual is large, so this result does not by itself mean autocorrelation. It was not split further.
+
+**The whole gap, combined with the twins entry.**
+
+| what the generator left out | share of the 0.21 |
+|---|---|
+| the recording's own peaks | 45% |
+| the structure of the real residual | 32% |
+| the recording's own curve, instead of the median one | 15% |
+| the size of the real residual | 8% |
+
+The four add up to 100%. The peaks × residual interaction (9%) is reported separately. The generator's 3× overprediction comes mainly from the absence of real peaks and from white noise standing in for a structured residual; the noise level and the median-curve shortcut matter little at the median.
+
+Not done: a generator that resampled real residuals and real peaks would test whether its predicted sizes then match. This is a suggestion only.
+
+**Reproduction.** I made a fresh copy of the tracked and new files (no `data/`), built a new venv from `requirements.txt` and ran `bash scripts/run_all.sh` with the seven-cell twins.
+- **Run.** Exit 0 in 5 min 0 s, with 31/31 tests passing.
+- **Outputs.** All 54 compared outputs are byte-identical to the project's: 19 tables, 4 figures and 31 local `data/` files. The arrays in `data/fits.npz` are equal.
+- **Not regenerated.** `sim_summary.csv` and the synthetic figure were copies, since the run did not use `--with-sim`.
+- **Not pinned.** The files are uncommitted, so this run is not tied to a commit.

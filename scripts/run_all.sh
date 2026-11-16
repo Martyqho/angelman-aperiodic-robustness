@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Regenerate everything from Supplementary Data 1, in order. Run from the repo root
 # with the project's environment active (python -m pip install -r requirements.txt).
-#   bash scripts/run_all.sh             conventions, fit pass, QC, validation, tests
+#   bash scripts/run_all.sh             conventions, fit pass, QC, analysis, validation, diagnostics,
+#                                       synthetic-vs-real TD gap twins (~4 min), tests
 #   bash scripts/run_all.sh --with-sim  also the synthetic validation (~12 min)
 # Override the interpreter with PYTHON=/path/to/python.
 set -euo pipefail
@@ -16,9 +17,11 @@ assert h == c['supplement_sha256'], f'supplement sha256 {h} != config'; print('s
 echo "== conventions (src/validate.py)";      "$PY" src/validate.py
 echo "== fit pass (src/fit_spectra.py)";      "$PY" src/fit_spectra.py
 echo "== QC (src/qc.py)";                     "$PY" src/qc.py
+echo "== primary analysis and secondaries (src/analysis.py)"; "$PY" src/analysis.py
 echo "== validation (src/validation.py)";     "$PY" src/validation.py
 echo "== Fig 1e diagnostic (src/fig1e_diagnostic.py)"; "$PY" src/fig1e_diagnostic.py
 echo "== gap subsets and Fig 1e cross-tabs (src/gap_subsets.py)"; "$PY" src/gap_subsets.py
+echo "== synthetic-vs-real TD gap twins (src/sim_gap_twins.py)"; "$PY" src/sim_gap_twins.py
 if [[ "${1:-}" == "--with-sim" ]]; then
   echo "== synthetic validation (src/simulate.py)"; "$PY" src/simulate.py
 fi

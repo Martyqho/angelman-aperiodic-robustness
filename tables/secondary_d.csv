@@ -1,0 +1,79 @@
+block,group,mode,stratum,measure,value,n,label
+knee_flag_rate,TD,knee,all,flagged,17,185,predeclared: PROTOCOL (d)
+knee_flag_rate,TD,knee,all,rate,0.091892,185,predeclared: PROTOCOL (d)
+knee_flag_rate,TD,knee,"[0, 3)",flagged,13,48,predeclared: PROTOCOL (d)
+knee_flag_rate,TD,knee,"[0, 3)",rate,0.27083,48,predeclared: PROTOCOL (d)
+knee_flag_rate,TD,knee,"[3, 6)",flagged,3,54,predeclared: PROTOCOL (d)
+knee_flag_rate,TD,knee,"[3, 6)",rate,0.055556,54,predeclared: PROTOCOL (d)
+knee_flag_rate,TD,knee,"[6, 9)",flagged,0,48,predeclared: PROTOCOL (d)
+knee_flag_rate,TD,knee,"[6, 9)",rate,0,48,predeclared: PROTOCOL (d)
+knee_flag_rate,TD,knee,"[9, 12)",flagged,1,23,predeclared: PROTOCOL (d)
+knee_flag_rate,TD,knee,"[9, 12)",rate,0.043478,23,predeclared: PROTOCOL (d)
+knee_flag_rate,TD,knee,"[12, 16)",flagged,0,12,predeclared: PROTOCOL (d)
+knee_flag_rate,TD,knee,"[12, 16)",rate,0,12,predeclared: PROTOCOL (d)
+edge_rule_count,TD,knee,all,peak_delta_0_and_resid_delta_gt_0.3,0,185,predeclared: PROTOCOL (d)
+diagnostics,TD,knee,all,converged,185,185,predeclared: PROTOCOL (d)
+diagnostics,TD,knee,all,median_fit_error,0.02936,185,predeclared: PROTOCOL (d)
+diagnostics,TD,knee,all,median_n_peaks,4,185,predeclared: PROTOCOL (d)
+diagnostics,TD,knee,all,median_n_peaks_below_6hz,1,185,predeclared: PROTOCOL (d)
+diagnostics,TD,knee,all,mean_n_peaks_below_6hz,0.67568,185,predeclared: PROTOCOL (d)
+edge_rule_count,TD,fixed,all,peak_delta_0_and_resid_delta_gt_0.3,0,185,predeclared: PROTOCOL (d)
+diagnostics,TD,fixed,all,converged,185,185,predeclared: PROTOCOL (d)
+diagnostics,TD,fixed,all,median_fit_error,0.040894,185,predeclared: PROTOCOL (d)
+diagnostics,TD,fixed,all,median_n_peaks,4,185,predeclared: PROTOCOL (d)
+diagnostics,TD,fixed,all,median_n_peaks_below_6hz,1,185,predeclared: PROTOCOL (d)
+diagnostics,TD,fixed,all,mean_n_peaks_below_6hz,0.77838,185,predeclared: PROTOCOL (d)
+knee_flag_rate,AS,knee,all,flagged,8,159,predeclared: PROTOCOL (d)
+knee_flag_rate,AS,knee,all,rate,0.050314,159,predeclared: PROTOCOL (d)
+knee_flag_rate,AS,knee,"[0, 3)",flagged,3,37,predeclared: PROTOCOL (d)
+knee_flag_rate,AS,knee,"[0, 3)",rate,0.081081,37,predeclared: PROTOCOL (d)
+knee_flag_rate,AS,knee,"[3, 6)",flagged,4,48,predeclared: PROTOCOL (d)
+knee_flag_rate,AS,knee,"[3, 6)",rate,0.083333,48,predeclared: PROTOCOL (d)
+knee_flag_rate,AS,knee,"[6, 9)",flagged,1,39,predeclared: PROTOCOL (d)
+knee_flag_rate,AS,knee,"[6, 9)",rate,0.025641,39,predeclared: PROTOCOL (d)
+knee_flag_rate,AS,knee,"[9, 12)",flagged,0,23,predeclared: PROTOCOL (d)
+knee_flag_rate,AS,knee,"[9, 12)",rate,0,23,predeclared: PROTOCOL (d)
+knee_flag_rate,AS,knee,"[12, 16)",flagged,0,12,predeclared: PROTOCOL (d)
+knee_flag_rate,AS,knee,"[12, 16)",rate,0,12,predeclared: PROTOCOL (d)
+edge_rule_count,AS,knee,all,peak_delta_0_and_resid_delta_gt_0.3,4,159,predeclared: PROTOCOL (d)
+diagnostics,AS,knee,all,converged,159,159,predeclared: PROTOCOL (d)
+diagnostics,AS,knee,all,median_fit_error,0.039824,159,predeclared: PROTOCOL (d)
+diagnostics,AS,knee,all,median_n_peaks,3,159,predeclared: PROTOCOL (d)
+diagnostics,AS,knee,all,median_n_peaks_below_6hz,2,159,predeclared: PROTOCOL (d)
+diagnostics,AS,knee,all,mean_n_peaks_below_6hz,1.3962,159,predeclared: PROTOCOL (d)
+edge_rule_count,AS,fixed,all,peak_delta_0_and_resid_delta_gt_0.3,3,159,predeclared: PROTOCOL (d)
+diagnostics,AS,fixed,all,converged,159,159,predeclared: PROTOCOL (d)
+diagnostics,AS,fixed,all,median_fit_error,0.046154,159,predeclared: PROTOCOL (d)
+diagnostics,AS,fixed,all,median_n_peaks,3,159,predeclared: PROTOCOL (d)
+diagnostics,AS,fixed,all,median_n_peaks_below_6hz,1,159,predeclared: PROTOCOL (d)
+diagnostics,AS,fixed,all,mean_n_peaks_below_6hz,1.283,159,predeclared: PROTOCOL (d)
+gap_decomposition,TD,knee,refit_pd_eq_0,mean_gap,,0,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,TD,knee,refit_pd_eq_0,median_gap,,0,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,TD,knee,refit_pd_eq_0,share_of_group_gap,-0,0,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,TD,knee,refit_pd_gt_0,mean_gap,-0.016904,185,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,TD,knee,refit_pd_gt_0,median_gap,-0.00638,185,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,TD,knee,refit_pd_gt_0,share_of_group_gap,1,185,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,TD,knee,refit_pd_lt_0.01,mean_gap,-0.027988,89,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,TD,knee,refit_pd_lt_0.01,median_gap,0.009281,89,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,TD,knee,refit_pd_lt_0.01,share_of_group_gap,0.7965,89,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,TD,knee,refit_pd_ge_0.01,mean_gap,-0.0066291,96,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,TD,knee,refit_pd_ge_0.01,median_gap,-0.011617,96,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,TD,knee,refit_pd_ge_0.01,share_of_group_gap,0.2035,96,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,TD,knee,all,mean_gap,-0.016904,185,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,TD,knee,all,median_gap,-0.00638,185,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,TD,knee,all,share_of_group_gap,1,185,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,AS,knee,refit_pd_eq_0,mean_gap,-0.93623,4,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,AS,knee,refit_pd_eq_0,median_gap,-0.81179,4,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,AS,knee,refit_pd_eq_0,share_of_group_gap,0.18878,4,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,AS,knee,refit_pd_gt_0,mean_gap,-0.10382,155,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,AS,knee,refit_pd_gt_0,median_gap,-0.098072,155,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,AS,knee,refit_pd_gt_0,share_of_group_gap,0.81122,155,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,AS,knee,refit_pd_lt_0.01,mean_gap,-0.28738,27,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,AS,knee,refit_pd_lt_0.01,median_gap,-0.18789,27,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,AS,knee,refit_pd_lt_0.01,share_of_group_gap,0.39115,27,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,AS,knee,refit_pd_ge_0.01,mean_gap,-0.091499,132,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,AS,knee,refit_pd_ge_0.01,median_gap,-0.095443,132,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,AS,knee,refit_pd_ge_0.01,share_of_group_gap,0.60885,132,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,AS,knee,all,mean_gap,-0.12476,159,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,AS,knee,all,median_gap,-0.10444,159,post hoc (2026-11-14): knee refit - reported periodic delta
+gap_decomposition,AS,knee,all,share_of_group_gap,1,159,post hoc (2026-11-14): knee refit - reported periodic delta
