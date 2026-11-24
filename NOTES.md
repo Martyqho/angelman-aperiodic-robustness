@@ -673,3 +673,68 @@ Not done: a generator that resampled real residuals and real peaks would test wh
 - **Outputs.** All 54 compared outputs are byte-identical to the project's: 19 tables, 4 figures and 31 local `data/` files. The arrays in `data/fits.npz` are equal.
 - **Not regenerated.** `sim_summary.csv` and the synthetic figure were copies, since the run did not use `--with-sim`.
 - **Not pinned.** The files are uncommitted, so this run is not tied to a commit.
+
+## 2026-11-16 — Phase 4 complete
+
+**What Phase 4 covered.**
+- *2026-11-14:* the primary analysis, both predeclared sensitivities, secondaries (a)–(e) and the AS–TD contrast by mode.
+- *2026-11-14, post hoc:* the periodic-gap subsets and Fig 1e cross-tabs.
+- *2026-11-16, post hoc:* why the synthetic validation overpredicted the TD gap.
+
+**Headline.**
+- **Primary median d** (fixed − knee periodic delta): all +0.197 [0.161, 0.229], 92% > 0; TD +0.110 [0.094, 0.129]; AS +0.426 [0.349, 0.481].
+- **Sensitivities:** both agree.
+- **AS–TD contrast:** it grows under fixed mode. Cohen's d for periodic delta goes from 1.27 to 1.72, and for exponent from 0.87 to 1.53.
+- **TD exponent age slope:** +0.320 under knee against +0.078 under fixed, per doubling of age.
+
+**Predeclared item not done.** The GAM shape comparison in secondary (c), against the paper's Fig 3 TD curve, was not run, and no reason was recorded. The "can say" question about the TD curve's shape is therefore answered for the linear slope only.
+
+**Records written at the close.**
+- **`README.md`** has a Results section: the primary with its CI, both sensitivities, the contrast under each mode, Fig 1e in two sentences, and PROTOCOL v2.3's "It cannot say" list copied verbatim, including the upstream-processing (aggregation-level) item.
+  - That list replaces the README's earlier "What this study cannot claim" section. Its third bullet said the reported values "are averages of regional fits", which is more than the Fig 1e diagnostic found: Fig 1e is not a single knee fit, and which aggregation was used is unknown.
+  - The Status line, run line and Layout were updated to match the pipeline.
+- **`tables/deviations.csv`** has 11 new rows of differences from PROTOCOL, each with its reason: 3 procedure, 1 specification, 1 amendment, 3 expectation, 2 addition and 1 exploratory plan.
+  - The 7 reported-value rows are unchanged on their original columns.
+  - The rows live in `src/validation.py` (`PROTOCOL_DEVIATIONS`), so `run_all.sh` regenerates them. Each reason is what NOTES recorded at the time, or the row says none was recorded.
+- **`PROTOCOL.md`** is unchanged (v2.3).
+
+**Reproduction.** I made a fresh copy of the tracked and new files (no `data/`), built a new venv from `requirements.txt` and ran `bash scripts/run_all.sh`.
+- **Run.** Exit 0 in 5 min 0 s, with 31/31 tests passing.
+- **Outputs.** All 54 compared outputs are byte-identical to the project's: 19 tables including `deviations.csv`, 4 figures and 31 local `data/` files. The arrays in `data/fits.npz` are equal.
+
+**State.**
+- **Uncommitted.** Every Phase 4 file is uncommitted on top of e0f3d0a, so this reproduction is not tied to a commit.
+- **Synthetic outputs.** `sim_summary.csv` and `fig_synthetic_validation.png` were last regenerated and verified at 7a2bf66 (2026-11-14 gate entry).
+
+**Still open.**
+- The AS periodic-delta gap against the reported values (−0.125) is unexplained. How the authors aggregated is the email's question.
+- The mechanism clause of the 2026-11-03 expectation is untested.
+- The GAM shape comparison has not been run.
+- No synthetic generator that resamples real peaks and residuals has been built.
+
+## 2026-11-19 — PROTOCOL v2.4: post-analysis records
+
+`PROTOCOL.md` moves from v2.3 to v2.4. It records the Phase 4 close by adding to the document; nothing is rewritten.
+- **Diff.** The only line removed is the title. Every addition is marked as written 2026-11-19 and cites the dates of the results it reports.
+- **Predeclared text.** Unchanged word for word: the estimand, secondary outcomes (a)–(e) including the GAM clause in (c), inclusion, conventions, the QC gate, statistics ("log age"), the expectations and the claims section.
+
+**Added.**
+- **Under the title:** a note that predeclared content froze at v2.3 (2026-11-05) and that v2.4 adds post-analysis records only.
+- **After the Conventions deviations sentence:** a pointer to the protocol rows of `tables/deviations.csv`.
+- **Expectations:**
+  - a closing line to the real-data exposure note: nothing predeclared remains unseen as of 2026-11-14;
+  - the outcome of each clause, with numbers from `tables/`. The TD size was not held. The mechanism is untested and therefore not confirmed. The reason for the TD miss is labelled post hoc.
+- **Exploratory:** the four listed analyses were not run, and the exploratory and post hoc analyses that were run are listed instead. The AS − TD median difference appears only here; it is not added to the secondary outcomes.
+- **New section, Deviations from this protocol:** placed after the claims section and before the change log. It points to `tables/deviations.csv` and lists the items that touch predeclared content:
+  - the GAM in (c) was not run, and no reason was recorded;
+  - the committed paired plot is binned;
+  - (b) is reported in `group_contrast_by_mode.csv`;
+  - "log age" was taken as log2;
+  - QC item 2 was resolved by the v2.3 rewording.
+- **Change log:** a v2.4 entry saying it was written after all results were seen.
+
+**Elsewhere.**
+- **README:** the copied "cannot say" list now cites "v2.3; unchanged in v2.4", and it still matches PROTOCOL word for word.
+- **`src/validation.py` and `tables/deviations.csv`:** unchanged. They name the differences "from PROTOCOL v2.3", which still describes the predeclared plan correctly. No output was regenerated, because no file read by the pipeline changed.
+
+Nothing committed.
